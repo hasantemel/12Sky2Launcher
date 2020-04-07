@@ -3,23 +3,29 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29926.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LauncherCS", "LauncherCS.csproj", "{77CF0137-BA51-4A97-B2F4-BAB900F25696}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LauncherCS", "LauncherCS.csproj", "{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{77CF0137-BA51-4A97-B2F4-BAB900F25696}.Debug|x86.ActiveCfg = Debug|x86
-		{77CF0137-BA51-4A97-B2F4-BAB900F25696}.Debug|x86.Build.0 = Debug|x86
-		{77CF0137-BA51-4A97-B2F4-BAB900F25696}.Release|x86.ActiveCfg = Release|x86
-		{77CF0137-BA51-4A97-B2F4-BAB900F25696}.Release|x86.Build.0 = Release|x86
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Debug|x86.ActiveCfg = Release|x86
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Debug|x86.Build.0 = Release|x86
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Release|x86.ActiveCfg = Release|x86
+		{0223E5FD-1D0C-431D-B007-CD0C85B6DEE7}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C3376E8E-7502-4927-AEAA-B793C60E1BED}
+		SolutionGuid = {B1F01566-77DF-4131-8C8F-501E61984FAE}
 	EndGlobalSection
 EndGlobal

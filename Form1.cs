@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -21,8 +21,114 @@ using DWORD = System.Int32;
 using static LauncherCS.Define;
 using static LauncherCS.INIFile;
 
+
 namespace LauncherCS
 {
+    public partial class Form1 : Form
+    {
+        int width;
+        int height;
+        PATCHER patcher;
+        public static ChromiumWebBrowser chromeBrowser;
+
+        public Form1()
+        {
+            InitializeComponent();
+            InitializeChromium();
+        }
+        public void InitializeChromium()
+        {
+            CefSettings settings = new CefSettings();// Initialize cef with the provided settings
+            Cef.Initialize(settings);
+            chromeBrowser = new ChromiumWebBrowser("http://127.0.0.1");// Create a browser component with url
+            //chromeBrowser = new ChromiumWebBrowser( $"{Application.StartupPath}\\Launcher\\index.html" );// Create a browser component with html file
+            //chromeBrowser.BackColor = Color.Transparent;
+            chromeBrowser.Dock = DockStyle.Fill;
+
+            // Allow the use of local resources in the browser
+            BrowserSettings browserSettings = new BrowserSettings();
+            browserSettings.FileAccessFromFileUrls = CefState.Enabled;
+            browserSettings.UniversalAccessFromFileUrls = CefState.Enabled;
+            chromeBrowser.BrowserSettings = browserSettings;
+
+            chromeBrowser.JavascriptMessageReceived += OnBrowserJavascriptMessageReceived;
+            chromeBrowser.FrameLoadEnd += OnFrameLoadEnd;
+            CefSharpSettings.LegacyJavascriptBindingEnabled = true;
+            chromeBrowser.JavascriptObjectRepository.Register("jscallcs", new JSCallCS(), true);
+            Controls.Add(chromeBrowser);
+
+            //this.Dock = System.Windows.Forms.DockStyle.None;
+            //this.TransparencyKey = Color.Transparent;
+            //FormBorderStyle = FormBorderStyle.None;
+            //Dock = DockStyle.None;
+            //BackColor = Color.Magenta;
+            //TransparencyKey = Color.Magenta;
+            //FormBorderStyle = FormBorderStyle.None;
+
+        }
+        void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Cef.Shutdown();
+        }
+        public void OnFrameLoadEnd(object sender, FrameLoadEndEventArgs e)
+        {
+            if (e.Frame.IsMain)
+            {
+                GetWidthHeight();
+
+                //call cs function by js code
+                //onclick
+                chromeBrowser.ExecuteScriptAsync(@"
+                    document.body.onmouseup = function(e)
+                    {
+                       var id = e.target.id;
+                       if( id == 'StartButton' )
+                            jscallcs.start('TwelveSky2.exe');
+                       if( id == 'ExitButton' )
+                           jscallcs.exit();
+                       //alert(e.target.id);
+                    }
+                ");
+            }
+        }
+        public void SetWidthHeight()
+        {
+            this.ClientSize = new Size(width, height);
+        }
+        async void GetWidthHeight()
+        {
+            //Check if the browser can execute JavaScript and the ScriptTextBox is filled
+            if (chromeBrowser.CanExecuteJavascriptInMainFrame)
+            {
+                //Evaluate javascript and remember the evaluation result
+                JavascriptResponse response = await chromeBrowser.EvaluateScriptAsync(" document.getElementById('back_ground').width; ");
+                JavascriptResponse response2 = await chromeBrowser.EvaluateScriptAsync(" document.getElementById('back_ground').height; ");
+
+                if (response.Result != null && response2.Result != null)
+                {
+                    width = (int)response.Result;
+                    height = (int)response2.Result;
+                    this.Invoke(new MethodInvoker(delegate {
+                        SetWidthHeight();
+                        patcher = new PATCHER();
+                        patcher.Init();
+                    }));
+                    //MessageBox.Show( "width:"+response.Result.ToString() + ",height:" + response2.Result.ToString(), "JavaScript Result");
+                }
+            }
+        }
+        void OnBrowserJavascriptMessageReceived(object sender, JavascriptMessageReceivedEventArgs e)
+        {
+            var windowSelection = (string)e.Message;
+        }
+        public static void Exit()
+        {
+            Application.ExitThread();
+            Application.Exit();
+        }
+    }
+
+
     public static class Define
     {
         public static string FOLDER_PATH = Application.StartupPath + "\\";
@@ -169,7 +275,7 @@ namespace LauncherCS
         }
         public static BOOL CloseHandle(FileStream fs)
         {
-            if ( fs == null )
+            if (fs == null)
             {
                 return FALSE;
             }
@@ -216,122 +322,20 @@ namespace LauncherCS
             GC.Collect();
         }
     }
-    public partial class Form1 : Form
-    {
-        int width;
-        int height;
-        PATCHER patcher;
-        public static ChromiumWebBrowser chromeBrowser;
-
-        public Form1()
-        {
-            InitializeComponent();
-            InitializeChromium();
-        }
-        public void InitializeChromium()
-        {
-            CefSettings settings = new CefSettings();// Initialize cef with the provided settings
-            Cef.Initialize(settings);         
-            chromeBrowser = new ChromiumWebBrowser( "http://127.0.0.1" );// Create a browser component with url
-            //chromeBrowser = new ChromiumWebBrowser( $"{Application.StartupPath}\\Launcher\\index.html" );// Create a browser component with html file
-            //chromeBrowser.BackColor = Color.Transparent;
-            chromeBrowser.Dock = DockStyle.Fill;
-            Controls.Add(chromeBrowser);
-
-            // Allow the use of local resources in the browser
-            BrowserSettings browserSettings = new BrowserSettings();
-            browserSettings.FileAccessFromFileUrls = CefState.Enabled;
-            browserSettings.UniversalAccessFromFileUrls = CefState.Enabled;
-            chromeBrowser.BrowserSettings = browserSettings;
-
-            chromeBrowser.JavascriptMessageReceived += OnBrowserJavascriptMessageReceived;
-            chromeBrowser.FrameLoadEnd += OnFrameLoadEnd;
-            CefSharpSettings.LegacyJavascriptBindingEnabled = true;
-            chromeBrowser.JavascriptObjectRepository.Register( "jscallcs", new JSCallCS(), true );
-
-            Dock = DockStyle.None;
-            //BackColor = Color.Transparent;
-            TransparencyKey = Color.Transparent;
-            FormBorderStyle = FormBorderStyle.None;
-
-        }
-        void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Cef.Shutdown();
-        }
-        public void OnFrameLoadEnd(object sender, FrameLoadEndEventArgs e)
-        {
-            if ( e.Frame.IsMain )
-            {
-                GetWidthHeight();
-
-                //call cs function by js code
-                //onclick
-                chromeBrowser.ExecuteScriptAsync(@"
-                    document.body.onmouseup = function(e)
-                    {
-                       var id = e.target.id;
-                       if( id == 'StartButton' )
-                            jscallcs.start('TwelveSky2.exe');
-                       if( id == 'ExitButton' )
-                           jscallcs.exit();
-                       alert(e.target.id);
-                    }
-                ");
-            }
-        }
-        public void SetWidthHeight()
-        {
-            this.ClientSize = new Size(width, height);
-        }
-        async void GetWidthHeight()
-        {
-            //Check if the browser can execute JavaScript and the ScriptTextBox is filled
-            if ( chromeBrowser.CanExecuteJavascriptInMainFrame )
-            {
-                //Evaluate javascript and remember the evaluation result
-                JavascriptResponse response = await chromeBrowser.EvaluateScriptAsync(" document.getElementById('back_ground').width; ");
-                JavascriptResponse response2 = await chromeBrowser.EvaluateScriptAsync( " document.getElementById('back_ground').height; ");
-                
-                if ( response.Result != null && response2.Result != null )
-                {
-                    width = (int)response.Result;
-                    height = (int)response2.Result;
-                    this.Invoke(new MethodInvoker(delegate {
-                        SetWidthHeight();
-                        patcher = new PATCHER();
-                        patcher.Init();
-                    }));
-                    //MessageBox.Show( "width:"+response.Result.ToString() + ",height:" + response2.Result.ToString(), "JavaScript Result");
-                }
-            }
-        }
-        void OnBrowserJavascriptMessageReceived(object sender, JavascriptMessageReceivedEventArgs e)
-        {
-            var windowSelection = (string)e.Message;
-        }
-        public static void Exit()
-        {
-            Application.ExitThread();
-            Application.Exit();
-        }
-    }
-
-        
     public class JSCallCS
     {
-        public void start( string message )
+        public void start(string message)
         {
             //System.Diagnostics.ProcessStartInfo p = new System.Diagnostics.ProcessStartInfo();
             try
             {
-                System.Diagnostics.Process.Start( FOLDER_PATH + message );
+                System.Diagnostics.Process.Start(FOLDER_PATH + message);
                 Application.ExitThread();
                 Application.Exit();
             }
-            catch( Exception e )
+            catch (Exception e)
             {
-                MessageBox.Show( e.Message, "[[ERROR:]]" );
+                MessageBox.Show(e.Message, "[[ERROR:]]");
             }
         }
         public void exit()
@@ -355,12 +359,12 @@ namespace LauncherCS
         public void Init()
         {
             client = new WebClient();
-            setDownloadInfoJS( 0, 0, 0, 0 );
+            setDownloadInfoJS(0, 0, 0, 0);
             CreatePatch();
         }
         void Close()
         {
-            if( client != null )
+            if (client != null)
             {
                 client.CancelAsync();
                 client.DownloadProgressChanged -= DownloadProgressChanged;
@@ -378,48 +382,48 @@ namespace LauncherCS
             int index01;
             int tCurrentPatch;
 
-            sprintf( ref tempString01, "%s%s", FOLDER_PATH, tFileName );
+            sprintf(ref tempString01, "%s%s", FOLDER_PATH, tFileName);
             try
             {
-                tempString01 = File.ReadAllText( tempString01 );
+                tempString01 = File.ReadAllText(tempString01);
             }
             catch
             {
                 tempString01 = "";
             }
-            if ( tempString01.Length < 5 )
+            if (tempString01.Length < 5)
             {
                 tempString01 = "00001";
             }
-            tempString01 = tempString01.Substring( 0, 5 );
-            tCurrentPatch = atoi( tempString01 );
-        
-        
-            sprintf( ref tempString01, "%sSERVERVER.INI", url );
-            uri = new Uri( tempString01 );
-            INIFile.CreateWithText( "SERVERVER.INI", GetTotalPatch(uri) );
-            if( GetPrivateProfileString( "UPTODATE", "SERVER", "00001", out tempString01, 5, "SERVERVER.INI" ) == 0 )
+            tempString01 = tempString01.Substring(0, 5);
+            tCurrentPatch = atoi(tempString01);
+
+
+            sprintf(ref tempString01, "%sSERVERVER.INI", url);
+            uri = new Uri(tempString01);
+            INIFile.CreateWithText("SERVERVER.INI", GetTotalPatch(uri));
+            if (GetPrivateProfileString("UPTODATE", "SERVER", "00001", out tempString01, 5, "SERVERVER.INI") == 0)
             {
                 MessageBox.Show("SERVERVER.INI file not found on server.");
                 Form1.Exit();
                 return;
             }
-            mRealTotalPatch = atoi( tempString01 ) - 1;
+            mRealTotalPatch = atoi(tempString01) - 1;
 
             tRealTotalNum = mRealTotalPatch - tCurrentPatch;
-            if ( tRealTotalNum > -1 )
+            if (tRealTotalNum > -1)
             {
-                mTotalPatchSize = new long[ tRealTotalNum + 1 ];
+                mTotalPatchSize = new long[tRealTotalNum + 1];
             }
-            if( mTotalPatchSize != null )
+            if (mTotalPatchSize != null)
             {
                 //MessageBox.Show( "number to download : " + mTotalPatchSize.Length.ToString() );
                 mTotalAllSize = 0;
-                for ( index01 = 0; index01 < mTotalPatchSize.Length; index01++ )
+                for (index01 = 0; index01 < mTotalPatchSize.Length; index01++)
                 {
-                    sprintf( ref tempString01, "%s%05d.DAT", url, tCurrentPatch + index01 );
-                    uri = new Uri( tempString01 );
-                    mTotalPatchSize[index01] = GetFileSize( uri );
+                    sprintf(ref tempString01, "%s%05d.DAT", url, tCurrentPatch + index01);
+                    uri = new Uri(tempString01);
+                    mTotalPatchSize[index01] = GetFileSize(uri);
                     mTotalAllSize += mTotalPatchSize[index01];
                 }
                 mDownloadingPatch = tCurrentPatch;
@@ -428,12 +432,12 @@ namespace LauncherCS
             }
             setCompletedJS();
         }
-        public BOOL ExtractPatch( int tVersion )
+        public BOOL ExtractPatch(int tVersion)
         {
             int index01;
-	        BYTE[] tOriginal;
+            BYTE[] tOriginal;
             string tempString01 = "";
-            string tFileName = "";             
+            string tFileName = "";
             int tFileCount;
             int tPosition;
             int tFileNameLength;
@@ -445,93 +449,93 @@ namespace LauncherCS
             FileInfo hFileInfo;
             FileStream hFile;
 
-            sprintf( ref tFileName, "%s%05d.DAT", FOLDER_PATH, tVersion );
-        
-	        try
-	        {
-                hFileInfo = new FileInfo( tFileName );
-		        hFile = hFileInfo.Open( FileMode.Open, FileAccess.Read, FileShare.None );
-	        }
-            catch( Exception e )
+            sprintf(ref tFileName, "%s%05d.DAT", FOLDER_PATH, tVersion);
+
+            try
             {
-                MessageBox.Show( e.Message, "[[ERROR:]]" );
+                hFileInfo = new FileInfo(tFileName);
+                hFile = hFileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "[[ERROR:]]");
                 Close();
                 return FALSE;
-	        }
-	        tOriginal = GlobalAlloc( GMEM_FIXED, (int)hFile.Length );
-	        if( tOriginal == NULL )
-	        {
-                CloseHandle( hFile );
-		        return FALSE;
-	        }
-            if( !ReadFile( hFile, ref tOriginal, tOriginal.Length ) )
-	         {
-                CloseHandle( hFile );
-		        GlobalFree( tOriginal );
-		        return FALSE;
-	        }
-            if( !CloseHandle( hFile ) )
+            }
+            tOriginal = GlobalAlloc(GMEM_FIXED, (int)hFile.Length);
+            if (tOriginal == NULL)
             {
-		        GlobalFree( tOriginal );
+                CloseHandle(hFile);
+                return FALSE;
+            }
+            if (!ReadFile(hFile, ref tOriginal, tOriginal.Length))
+            {
+                CloseHandle(hFile);
+                GlobalFree(tOriginal);
+                return FALSE;
+            }
+            if (!CloseHandle(hFile))
+            {
+                GlobalFree(tOriginal);
                 return FALSE;
             }
             hFile.Dispose();
 
             tPosition = 0;
-            tFileCount = btoi( tOriginal, ref tPosition );
-            for ( index01 = 0; index01 < tFileCount; index01++ )
+            tFileCount = btoi(tOriginal, ref tPosition);
+            for (index01 = 0; index01 < tFileCount; index01++)
             {
-                tFileNameLength = btoi( tOriginal, ref tPosition );
-                tFileNameSub = Create<BYTE>( tFileNameLength );
-                if( tFileNameSub == NULL )
+                tFileNameLength = btoi(tOriginal, ref tPosition);
+                tFileNameSub = Create<BYTE>(tFileNameLength);
+                if (tFileNameSub == NULL)
                 {
                     return FALSE;
                 }
-                tPosition = CopyMemory( tFileNameSub, tOriginal, tFileNameLength, 0, tPosition );
-                tFileOriginalSize = btoi( tOriginal, ref tPosition );
-                tFileOriginal =  Create<BYTE>( tFileOriginalSize );
-                if( tFileOriginal == NULL )
+                tPosition = CopyMemory(tFileNameSub, tOriginal, tFileNameLength, 0, tPosition);
+                tFileOriginalSize = btoi(tOriginal, ref tPosition);
+                tFileOriginal = Create<BYTE>(tFileOriginalSize);
+                if (tFileOriginal == NULL)
                 {
                     return FALSE;
                 }
-                tFileCompressSize = btoi( tOriginal, ref tPosition );
-                tFileCompress =  Create<BYTE>( tFileCompressSize );
-                if( tFileCompress == NULL )
+                tFileCompressSize = btoi(tOriginal, ref tPosition);
+                tFileCompress = Create<BYTE>(tFileCompressSize);
+                if (tFileCompress == NULL)
                 {
                     return FALSE;
                 }
-                tPosition = CopyMemory( tFileCompress, tOriginal, tFileCompressSize, 0, tPosition );
+                tPosition = CopyMemory(tFileCompress, tOriginal, tFileCompressSize, 0, tPosition);
                 //tNextPosition = index01 * ( 4 + tFileNameLength + 4 + 4 + tFileCompressSize );
 
-	            if( !uncompress( tFileCompressSize, tFileCompress, tFileOriginalSize, tFileOriginal ) )
-	            {
-		            GlobalFree( tFileCompress );
-		            GlobalFree( tFileOriginal );
-		            GlobalFree( tOriginal );
-		            return FALSE;
-	            }
+                if (!uncompress(tFileCompressSize, tFileCompress, tFileOriginalSize, tFileOriginal))
+                {
+                    GlobalFree(tFileCompress);
+                    GlobalFree(tFileOriginal);
+                    GlobalFree(tOriginal);
+                    return FALSE;
+                }
 
-                string filePath = FOLDER_PATH + btoa( tFileNameSub );
-                new FileInfo( filePath ).Directory.Create(); // If the directory already exists, this method does nothing.
+                string filePath = FOLDER_PATH + btoa(tFileNameSub);
+                new FileInfo(filePath).Directory.Create(); // If the directory already exists, this method does nothing.
 
                 //MessageBox.Show( filePath, "dd" );
                 try
                 {
-                    File.WriteAllBytes( filePath, tFileOriginal );
+                    File.WriteAllBytes(filePath, tFileOriginal);
                 }
                 catch
                 {
                     return FALSE;
                 }
 
-                GlobalFree( tFileCompress );
-		        GlobalFree( tFileOriginal );
+                GlobalFree(tFileCompress);
+                GlobalFree(tFileOriginal);
             }
-            File.Delete( tFileName );//delete .DAT after extracted
+            File.Delete(tFileName);//delete .DAT after extracted
             try
             {
-                sprintf( ref tempString01, "%05d", tVersion + 1 );
-                File.WriteAllText( FOLDER_PATH + "PRESENTVERSION.DAT", tempString01 );
+                sprintf(ref tempString01, "%05d", tVersion + 1);
+                File.WriteAllText(FOLDER_PATH + "PRESENTVERSION.DAT", tempString01);
             }
             catch
             {
@@ -564,7 +568,7 @@ namespace LauncherCS
             {
                 var fileSize = webResponse.Headers.Get("Content-Length");
                 var fileSizeInMegaByte = fileSize;// Math.Round(Convert.ToDouble(fileSize) / 1024.0 / 1024.0, 2);
-                return atol( fileSizeInMegaByte );
+                return atol(fileSizeInMegaByte);
             }
         }
         void DownloadFile()
@@ -574,14 +578,14 @@ namespace LauncherCS
             string tempString02 = "";
 
             mLastReceived = 0;
-            sprintf( ref tempString01, "%s%05d.DAT", url, mDownloadingPatch );
-            sprintf( ref tempString02, "%s%05d.DAT", FOLDER_PATH, mDownloadingPatch );
-            uri = new Uri( tempString01 );
-            using ( client = new WebClient() )
+            sprintf(ref tempString01, "%s%05d.DAT", url, mDownloadingPatch);
+            sprintf(ref tempString02, "%s%05d.DAT", FOLDER_PATH, mDownloadingPatch);
+            uri = new Uri(tempString01);
+            using (client = new WebClient())
             {
                 client.DownloadProgressChanged += DownloadProgressChanged;
                 client.DownloadFileCompleted += DownloadFileCompleted;
-                client.DownloadFileAsync( uri, tempString02 );
+                client.DownloadFileAsync(uri, tempString02);
             }
         }
         void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -589,12 +593,12 @@ namespace LauncherCS
             mCurrentLoadSize += e.BytesReceived - mLastReceived;
             mTotalAllDownloaded = mCurrentLoadSize;
             mLastReceived = e.BytesReceived;
-            setDownloadInfoJS( e.BytesReceived, e.TotalBytesToReceive, mDownloadingPatch, mRealTotalPatch );
+            setDownloadInfoJS(e.BytesReceived, e.TotalBytesToReceive, mDownloadingPatch, mRealTotalPatch);
             Thread.Sleep(50);
         }
         void DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            if ( e.Cancelled )
+            if (e.Cancelled)
             {
                 Close();
                 MessageBox.Show("The download has been cancelled");
@@ -602,7 +606,7 @@ namespace LauncherCS
                 return;
             }
 
-            if ( e.Error != null ) // We have an error! Retry a few times, then abort.
+            if (e.Error != null) // We have an error! Retry a few times, then abort.
             {
                 Close();
                 MessageBox.Show("An error ocurred while trying to download file");
@@ -619,15 +623,15 @@ namespace LauncherCS
         async void setExtractingJS()
         {
             string tempString = "";
-            sprintf( ref tempString, "setExtracting('%05d','%05d');", mDownloadingPatch, mRealTotalPatch );
-            await Form1.chromeBrowser.EvaluateScriptAsync( tempString );
+            sprintf(ref tempString, "setExtracting('%05d','%05d');", mDownloadingPatch, mRealTotalPatch);
+            await Form1.chromeBrowser.EvaluateScriptAsync(tempString);
         }
         void setExtracting()
         {
             setExtractingJS();
-            if ( ExtractPatch( mDownloadingPatch ) )
+            if (ExtractPatch(mDownloadingPatch))
             {
-                if( mDownloadingPatch >= mRealTotalPatch )
+                if (mDownloadingPatch >= mRealTotalPatch)
                 {
                     setCompletedJS();
                     return;
@@ -637,11 +641,11 @@ namespace LauncherCS
                 DownloadFile();
             }
         }
-        async void setDownloadInfoJS( long tDownloadedBytes, long tTotalBytes, int tCurrentPatch, long tTotalPatch )
+        async void setDownloadInfoJS(long tDownloadedBytes, long tTotalBytes, int tCurrentPatch, long tTotalPatch)
         {
             string tempString = "";
-            sprintf( ref tempString, "setDownloadInfo(%d,%d,%d,%d,'%05d','%05d');", tDownloadedBytes, tTotalBytes, mTotalAllDownloaded, mTotalAllSize, tCurrentPatch, tTotalPatch );
-            await Form1.chromeBrowser.EvaluateScriptAsync( tempString );
+            sprintf(ref tempString, "setDownloadInfo(%d,%d,%d,%d,'%05d','%05d');", tDownloadedBytes, tTotalBytes, mTotalAllDownloaded, mTotalAllSize, tCurrentPatch, tTotalPatch);
+            await Form1.chromeBrowser.EvaluateScriptAsync(tempString);
         }
     }
     public static class INIFile
@@ -660,51 +664,51 @@ namespace LauncherCS
             }
             return TRUE;
         }
-        public static void RemoveWhiteSpace( ref string nstr )
+        public static void RemoveWhiteSpace(ref string nstr)
         {
-            string[] str = nstr.Split( new string[] { "//" }, StringSplitOptions.None );
+            string[] str = nstr.Split(new string[] { "//" }, StringSplitOptions.None);
             nstr = str[0];
-            for ( int index04 = nstr.Length-1; index04 > 0; index04-- )//find tab string from last
+            for (int index04 = nstr.Length - 1; index04 > 0; index04--)//find tab string from last
             {
-                if( nstr[index04] != 0x09 )
+                if (nstr[index04] != 0x09)
                 {
-                    nstr = nstr.Substring( 0, index04 + 1 );
+                    nstr = nstr.Substring(0, index04 + 1);
                     break;
                 }
             }
-            for ( int index04 = nstr.Length-1; index04 > 0; index04--)//find space string from last
+            for (int index04 = nstr.Length - 1; index04 > 0; index04--)//find space string from last
             {
-                if( !nstr[index04].Equals( ' ' ) )
+                if (!nstr[index04].Equals(' '))
                 {
-                    nstr = nstr.Substring( 0, index04 + 1 );
+                    nstr = nstr.Substring(0, index04 + 1);
                     break;
                 }
             }
-            for ( int index04 = 0; index04 < nstr.Length; index04++)//find tab string from start
+            for (int index04 = 0; index04 < nstr.Length; index04++)//find tab string from start
             {
-                if( nstr[index04] != 0x09 )
+                if (nstr[index04] != 0x09)
                 {
-                    nstr = nstr.Substring( index04, nstr.Length - index04 );
+                    nstr = nstr.Substring(index04, nstr.Length - index04);
                     break;
                 }
             }
-            for ( int index04 = 0; index04 < nstr.Length; index04++)//find space string from start
+            for (int index04 = 0; index04 < nstr.Length; index04++)//find space string from start
             {
-                if( !nstr[index04].Equals( ' ' ) )
+                if (!nstr[index04].Equals(' '))
                 {
-                    nstr = nstr.Substring( index04, nstr.Length - index04 );
+                    nstr = nstr.Substring(index04, nstr.Length - index04);
                     break;
                 }
             }
         }
-        public static BOOL CreateWithText( in string lpFileName, in string lpString )
+        public static BOOL CreateWithText(in string lpFileName, in string lpString)
         {
             mFileName = lpFileName;
             mKeyValue = new List<KeyValuePair<string, Dictionary<string, string>>>();
             mFileData = new byte[lpString.Length];
 
             int index01 = 0;
-            foreach( char c in lpString.ToCharArray() )
+            foreach (char c in lpString.ToCharArray())
             {
                 mFileData[index01++] = (BYTE)c;
             }
@@ -715,8 +719,8 @@ namespace LauncherCS
             FileInfo tFileInfo;
             FileStream tFileStream;
 
-            tFileInfo = new FileInfo( lpFileName );
-            if ( !tFileInfo.Exists )
+            tFileInfo = new FileInfo(lpFileName);
+            if (!tFileInfo.Exists)
             {
                 return FALSE;
             }
@@ -733,7 +737,7 @@ namespace LauncherCS
         }
         static BOOL CreateBody()
         {
-            string[] tData = Encoding.UTF8.GetString(mFileData).Split( stringSeparators, StringSplitOptions.None);
+            string[] tData = Encoding.UTF8.GetString(mFileData).Split(stringSeparators, StringSplitOptions.None);
             string tSection = string.Empty;
             string[] tKeyValue;
             Dictionary<string, string> tValue2;
