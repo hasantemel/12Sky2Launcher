@@ -1,0 +1,183 @@
+<html>
+    <head>
+        <style>
+            html,body{
+                width: 1px;
+                height: 1px;
+            }
+            #back_ground {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+            }
+            #OptionButton {
+                position: absolute;
+                left: 280px;
+                top: 551px;
+            }
+            #StartButton {
+                position: absolute;
+                left: 402px;
+                top: 551px;
+            }
+            #ExitButton {
+                position: absolute;
+                left: 524px;
+                top: 551px;
+            }
+            #EachProgressBar {
+                position: absolute;
+                left: 309px;
+                top: 501px;
+            }
+            #TotalProgressBar {
+                position: absolute;
+                left: 309px;
+                top: 529px;
+            }
+            #EachProgressBarBlack {
+                position: absolute;
+                left: 309px;
+                top: 501px;
+                filter: brightness(0%);
+                float:right;
+            }
+            #TotalProgressBarBlack {
+                position: absolute;
+                left: 309px;
+                top: 529px;
+                filter: brightness(0%);
+                float:right;
+            }
+            #Version {
+                position: absolute;
+                left: 228px;
+                top: 498px;
+                font-family: 'Courier New';
+                color: white;
+                font-size: 13px;
+                font-style: normal;
+                font-weight: 10;
+                padding-top: 1px;
+                letter-spacing: 0.23;
+            }
+            #KB {
+                position: absolute;
+                left: 228px;
+                top: 526px;
+                font-family: 'Courier New';
+                color: white;
+                font-size: 13px;
+                font-style: normal;
+                font-weight: 10;
+                padding-top: 1px;
+                letter-spacing: 0.23;
+            }
+            #VersionInfo {
+                position: absolute;
+                left: 309px;
+                top: 486px;
+                font-family: 'Courier New';
+                color: white;
+                font-size: 13px;
+                font-style: normal;
+                font-weight: 10;
+                padding-top: 1px;
+                letter-spacing: 0.23;
+            }
+            #KBInfo {
+                position: absolute;
+                left: 309px;
+                top: 514px;
+                font-family: 'Courier New';
+                color: white;
+                font-size: 13px;
+                font-style: normal;
+                font-weight: 10;
+                padding-top: 1px;
+                letter-spacing: 0.23;
+            }
+        </style>
+    </head>
+
+    <body>
+        <img id="back_ground" src="1/1-BG.png" onmousedown="return false" />
+        <img id="OptionButton" src="1/1-BUTTON2-1.bmp" />
+        <img id="StartButton" src="1/1-BUTTON0-1.bmp" onmouseover="start(this)" onmouseout="startout(this)" onmousedown="startdown(this)" />
+        <img id="ExitButton" src="1/1-BUTTON1-1.bmp" />
+        <img id="EachProgressBarBlack" src="1/1-GAUGE0.bmp" />
+        <img id="TotalProgressBarBlack" src="1/1-GAUGE1.bmp" />
+        <img id="EachProgressBar" src="1/1-GAUGE0.bmp" height="7" />
+        <img id="TotalProgressBar" src="1/1-GAUGE1.bmp" height="7" />
+        <label id="Version">VERSION</label>
+        <label id="KB">PROCESS</label>
+        <label id="VersionInfo">Checking...</label>
+        <label id="KBInfo"></label>
+    </body>
+
+
+    <script type="text/javascript">
+
+    var i = 0;
+	var eaprocess = document.getElementById("EachProgressBar");
+    var totalinfo = document.getElementById('TotalProgressBar');
+	var eaprocessB = document.getElementById("EachProgressBar");
+    var totalinfoB = document.getElementById('TotalProgressBar');
+    var kbinfo = document.getElementById("KBInfo");
+    var versioninfo =document.getElementById("VersionInfo");
+    var startbutton = document.getElementById("StartButton");
+    
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    startbutton.ondragstart = function () { return false; };
+
+    function setCompleted()
+    {
+		versioninfo.textContent = "Completed.";
+    }
+    function setExtracting( currentPatch, totalPatch )
+    {
+		versioninfo.textContent = `Applying... (${currentPatch} / ${totalPatch})`;
+    }
+    function setDownloadInfo( downloadedBytes, totalBytes, totalAllDownloaded, totalAllSize, currentPatch, totalPatch )
+    {
+        if( totalAllSize == 0 || currentPatch == 0 || totalPatch == 0 )
+        {
+            eaprocess.style.width = 0;
+            totalinfo.style.width = 0;
+            return;
+        }
+		eaprocess.style.width = 3.67 * ((downloadedBytes/totalBytes) * 100).toFixed(3);
+        totalinfo.style.width = 3.67 * ((totalAllDownloaded/totalAllSize) * 100).toFixed(3);
+		kbinfo.textContent = `(${downloadedBytes} kb / ${totalBytes} kb)`;
+		versioninfo.textContent = `Downloading... (${currentPatch} / ${totalPatch})`;
+        if( totalAllDownloaded == totalAllSize )
+        {
+            startbutton.src = "1/1-BUTTON0-1.bmp";
+        }
+    }
+
+    var b_start_hover = false;
+    function start()
+    {
+        if( width < 100 || b_start_hover )
+            return;
+            startbutton.src = "1/1-BUTTON0-3.bmp";
+        b_start_hover = true;
+    }
+    function startout()
+    {
+        if( !b_start_hover )
+            return;
+        b_start_hover = false;
+        startbutton.src = "1/1-BUTTON0-1.bmp";
+    }
+    function startdown()
+    {
+        if( !b_start_hover )
+            return;
+        b_start_hover = false;
+        startbutton.src = "1/1-BUTTON0-4.bmp";
+    }
+    </script>
+
+</html>
