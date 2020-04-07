@@ -9,16 +9,12 @@ Install CefSharp by using Nuget on visual studio
 - Start Button -> need to enter/load client parameter | working
 - Display Resulotion -> not working
 
-PRESENTVERSION.DAT //start at 00001
+PRESENTVERSION.DAT //start at 00001<br/>
+00001<br/>
 
-00001
-
-SERVERVER.INI //start at 00002
-
-[UPTODATE]
-
-PATCH = 1.0.0.0
-
-SERVER = 00020
+SERVERVER.INI //start at 00002<br/>
+[UPTODATE]<br/>
+PATCH = 1.0.0.0<br/>
+SERVER = 00020<br/>
 
 ![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/Untitled.png)
