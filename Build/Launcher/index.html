@@ -107,8 +107,8 @@
         <img id="ExitButton" src="1/1-BUTTON1-1.bmp" />
         <img id="EachProgressBarBlack" src="1/1-GAUGE0.bmp" />
         <img id="TotalProgressBarBlack" src="1/1-GAUGE1.bmp" />
-        <img id="EachProgressBar" src="1/1-GAUGE0.bmp" height="7" />
-        <img id="TotalProgressBar" src="1/1-GAUGE1.bmp" height="7" />
+        <img id="EachProgressBar" src="1/1-GAUGE0.bmp" width="0" height="7" />
+        <img id="TotalProgressBar" src="1/1-GAUGE1.bmp" width="0" height="7" />
         <label id="Version">VERSION</label>
         <label id="KB">PROCESS</label>
         <label id="VersionInfo">Checking...</label>
@@ -118,12 +118,12 @@
 
     <script type="text/javascript">
 
-	var eaprocess = document.getElementById("EachProgressBar");
-	var totalinfo = document.getElementById('TotalProgressBar');
-	var eaprocessB = document.getElementById("EachProgressBar");
+	    var eaprocess = document.getElementById("EachProgressBar");
+	    var totalinfo = document.getElementById('TotalProgressBar');
+	    var eaprocessB = document.getElementById("EachProgressBar");
     	var totalinfoB = document.getElementById('TotalProgressBar');
     	var kbinfo = document.getElementById("KBInfo");
-	var versioninfo =document.getElementById("VersionInfo");
+	    var versioninfo =document.getElementById("VersionInfo");
     	var startbutton = document.getElementById("StartButton");
     
     	document.addEventListener('contextmenu', event => event.preventDefault());
@@ -145,10 +145,10 @@
 		    totalinfo.style.width = 0;
 		    return;
 		}
-			eaprocess.style.width = 3.67 * ((downloadedBytes/totalBytes) * 100).toFixed(3);
+		eaprocess.style.width = 3.67 * ((downloadedBytes/totalBytes) * 100).toFixed(3);
 		totalinfo.style.width = 3.67 * ((totalAllDownloaded/totalAllSize) * 100).toFixed(3);
-			kbinfo.textContent = `(${downloadedBytes} kb / ${totalBytes} kb)`;
-			versioninfo.textContent = `Downloading... (${currentPatch} / ${totalPatch})`;
+		kbinfo.textContent = `(${totalAllDownloaded} kb / ${totalAllSize} kb)`;
+		versioninfo.textContent = `Downloading... (${currentPatch} / ${totalPatch})`;
 		if( totalAllDownloaded == totalAllSize )
 		{
 		    startbutton.src = "1/1-BUTTON0-1.bmp";
@@ -161,22 +161,23 @@
 		if( width < 100 || b_start_hover )
 		    return;
 		    startbutton.src = "1/1-BUTTON0-3.bmp";
-		b_start_hover = true;
+		    b_start_hover = true;
 	    }
 	    function startout()
 	    {
 		if( !b_start_hover )
 		    return;
-		b_start_hover = false;
-		startbutton.src = "1/1-BUTTON0-1.bmp";
+		    b_start_hover = false;
+		    startbutton.src = "1/1-BUTTON0-1.bmp";
 	    }
 	    function startdown()
 	    {
-		if( !b_start_hover )
-		    return;
-		b_start_hover = false;
-		startbutton.src = "1/1-BUTTON0-4.bmp";
+            if( !b_start_hover )
+                return;
+            b_start_hover = false;
+            startbutton.src = "1/1-BUTTON0-4.bmp";
 	    }
+
     </script>
 
 </html>
