@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -232,8 +232,8 @@ namespace LauncherCS
         {
             CefSettings settings = new CefSettings();// Initialize cef with the provided settings
             Cef.Initialize(settings);         
-            //chromeBrowser = new ChromiumWebBrowser( "http://127.0.0.1" );// Create a browser component with url
-            chromeBrowser = new ChromiumWebBrowser( $"{Application.StartupPath}\\Launcher\\index.html" );// Create a browser component with html file
+            chromeBrowser = new ChromiumWebBrowser( "http://127.0.0.1" );// Create a browser component with url
+            //chromeBrowser = new ChromiumWebBrowser( $"{Application.StartupPath}\\Launcher\\index.html" );// Create a browser component with html file
             //chromeBrowser.BackColor = Color.Transparent;
             chromeBrowser.Dock = DockStyle.Fill;
             Controls.Add(chromeBrowser);
@@ -275,7 +275,7 @@ namespace LauncherCS
                             jscallcs.start('TwelveSky2.exe');
                        if( id == 'ExitButton' )
                            jscallcs.exit();
-                       //alert(e.target.id);
+                       alert(e.target.id);
                     }
                 ");
             }
@@ -344,7 +344,6 @@ namespace LauncherCS
         public Uri uri;
         public WebClient client;
         public string url = "http://pvp3.12sky2.online/launcher/";
-        public int mCurrentPatch = 0;
         public int mDownloadingPatch = 0;
         public int mRealTotalPatch = 0;
         public long[] mTotalPatchSize = null;
@@ -352,6 +351,7 @@ namespace LauncherCS
         public long mTotalAllSize = 0;
         public long mCurrentLoadSize = 0;
         public int mCurrentLoadIndex = 0;
+        public long mLastReceived = 0;
         public void Init()
         {
             client = new WebClient();
@@ -376,6 +376,7 @@ namespace LauncherCS
             string tFileName = "PRESENTVERSION.DAT";
             int tRealTotalNum;
             int index01;
+            int tCurrentPatch;
 
             sprintf( ref tempString01, "%s%s", FOLDER_PATH, tFileName );
             try
@@ -391,14 +392,11 @@ namespace LauncherCS
                 tempString01 = "00001";
             }
             tempString01 = tempString01.Substring( 0, 5 );
-            mCurrentPatch = atoi( tempString01 );
+            tCurrentPatch = atoi( tempString01 );
         
         
             sprintf( ref tempString01, "%sSERVERVER.INI", url );
             uri = new Uri( tempString01 );
-            //string[] patch_text = GetTotalPatch(uri).Split( stringSeparators, StringSplitOptions.None );
-            //patch_text[2] = Regex.Replace( patch_text[2], @"\s+", "" );
-            //patch_text[2] = patch_text[2].Replace( "SERVER=", "" );
             INIFile.CreateWithText( "SERVERVER.INI", GetTotalPatch(uri) );
             if( GetPrivateProfileString( "UPTODATE", "SERVER", "00001", out tempString01, 5, "SERVERVER.INI" ) == 0 )
             {
@@ -408,7 +406,7 @@ namespace LauncherCS
             }
             mRealTotalPatch = atoi( tempString01 ) - 1;
 
-            tRealTotalNum = mRealTotalPatch - mCurrentPatch;
+            tRealTotalNum = mRealTotalPatch - tCurrentPatch;
             if ( tRealTotalNum > -1 )
             {
                 mTotalPatchSize = new long[ tRealTotalNum + 1 ];
@@ -419,12 +417,12 @@ namespace LauncherCS
                 mTotalAllSize = 0;
                 for ( index01 = 0; index01 < mTotalPatchSize.Length; index01++ )
                 {
-                    sprintf( ref tempString01, "%s%05d.DAT", url, mCurrentPatch + index01 );
+                    sprintf( ref tempString01, "%s%05d.DAT", url, tCurrentPatch + index01 );
                     uri = new Uri( tempString01 );
                     mTotalPatchSize[index01] = GetFileSize( uri );
                     mTotalAllSize += mTotalPatchSize[index01];
                 }
-                mDownloadingPatch = mCurrentPatch;
+                mDownloadingPatch = tCurrentPatch;
                 DownloadFile();
                 return;
             }
@@ -571,15 +569,11 @@ namespace LauncherCS
         }
         void DownloadFile()
         {
-            string tempString02 = "";
+            //Task.WaitAll();
             string tempString01 = "";
+            string tempString02 = "";
 
-            mCurrentLoadSize = 0;
-            for ( int index01 = 0; index01 < mCurrentLoadIndex; index01++ )
-            {
-                mCurrentLoadSize += mTotalPatchSize[ index01 ];
-            }
-
+            mLastReceived = 0;
             sprintf( ref tempString01, "%s%05d.DAT", url, mDownloadingPatch );
             sprintf( ref tempString02, "%s%05d.DAT", FOLDER_PATH, mDownloadingPatch );
             uri = new Uri( tempString01 );
@@ -592,8 +586,11 @@ namespace LauncherCS
         }
         void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            mTotalAllDownloaded = mCurrentLoadSize + e.BytesReceived;
+            mCurrentLoadSize += e.BytesReceived - mLastReceived;
+            mTotalAllDownloaded = mCurrentLoadSize;
+            mLastReceived = e.BytesReceived;
             setDownloadInfoJS( e.BytesReceived, e.TotalBytesToReceive, mDownloadingPatch, mRealTotalPatch );
+            Thread.Sleep(50);
         }
         void DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
@@ -633,7 +630,6 @@ namespace LauncherCS
                 if( mDownloadingPatch >= mRealTotalPatch )
                 {
                     setCompletedJS();
-                    Close();
                     return;
                 }
                 mCurrentLoadIndex++;
