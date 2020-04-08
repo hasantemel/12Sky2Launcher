@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -39,10 +39,13 @@ namespace LauncherCS
         }
         public void InitializeChromium()
         {
+            //TransparencyKey = Color.Transparent;//delete libEGL.dll and libGLESv2.dll if using this
+
             CefSettings settings = new CefSettings();// Initialize cef with the provided settings
+
             Cef.Initialize(settings);
-            //chromeBrowser = new ChromiumWebBrowser("http://127.0.0.1");// Create a browser component with url
-            chromeBrowser = new ChromiumWebBrowser( $"{Application.StartupPath}\\Launcher\\index.html" );// Create a browser component with html file
+            chromeBrowser = new ChromiumWebBrowser("http://127.0.0.1");// Create a browser component with url
+            //chromeBrowser = new ChromiumWebBrowser( $"{Application.StartupPath}\\Launcher\\index.html" );// Create a browser component with html file
             chromeBrowser.Dock = DockStyle.Fill;
 
             // Allow the use of local resources in the browser
