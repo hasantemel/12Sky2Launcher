@@ -97,14 +97,39 @@
                 padding-top: 1px;
                 letter-spacing: 0.23;
             }
+            #Display {
+                position: absolute;
+                left: 350px;
+                top: 250px;
+                background-color:rgb(255, 255, 255);
+            }
+            #DisplayBODY {
+                background-color:rgb(219, 219, 219);
+                width: 240px;
+                height: 130px;
+            }
+            select:enabled{
+                background: rgb(250, 250, 250);
+            }
+            select:disabled{
+                background: rgb(209, 209, 209);
+            }
+            #HtmlPanel {
+                position: absolute;
+                left: 224px;
+                top: 165px;
+                width: 455px;
+                height: 306px;
+            }
         </style>
     </head>
 
-    <body>
-        <img id="back_ground" src="1/1-BG.png" onmousedown="return false" />
-        <img id="OptionButton" src="1/1-BUTTON2-1.bmp" />
-        <img id="StartButton" src="1/1-BUTTON0-1.bmp" onmouseover="start(this)" onmouseout="startout(this)" onmousedown="startdown(this)" />
-        <img id="ExitButton" src="1/1-BUTTON1-1.bmp" />
+    <body oncontextmenu="return false;" ondragstart="return false" onselectstart="return false;" style="overflow-x:hidden; overflow-y:hidden; border:0;">
+        <div id="dd"></div>
+        <img id="back_ground" src="1/1-BG.png" />
+        <img id="OptionButton" src="1/1-BUTTON2-1.bmp" onmouseover="displayhover(this)" onmouseout="displayout(this)" onmousedown="displaydown(this)" onmouseup="displayup(this)" />
+        <img id="StartButton" src="1/1-BUTTON0-1.bmp" onmouseover="starthover(this)" onmouseout="startout(this)" onmousedown="startdown(this)" onmouseup="startup(this)"  />
+        <img id="ExitButton" src="1/1-BUTTON1-1.bmp" onmouseover="quithover(this)" onmouseout="quitout(this)" onmousedown="quitdown(this)" onmouseup="quitup(this)" />
         <img id="EachProgressBarBlack" src="1/1-GAUGE0.bmp" />
         <img id="TotalProgressBarBlack" src="1/1-GAUGE1.bmp" />
         <img id="EachProgressBar" src="1/1-GAUGE0.bmp" width="0" height="7" />
@@ -113,11 +138,188 @@
         <label id="KB">PROCESS</label>
         <label id="VersionInfo">Checking...</label>
         <label id="KBInfo"></label>
+
+        <div id="Display" style="display:none;">
+            <div style="height:25px;">&nbsp;&nbsp;<label style="font-size:14px;font-family: 'Courier New';">Screen Option</label></div>
+            <div id="DisplayBODY">
+                <div style="height:25px;padding-top: 5px;">&nbsp;&nbsp;&nbsp;<label style="font-size:13px;font-family: 'Courier New';">Screen Resolution</label></div>
+                <div style="font-size:12px;">
+                    <input type="radio" id="winmode" name="screenRadio" />Window Mode
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="text" value="1024 X 768" id="winvalue" style="width:100px;" />
+                </div>
+                <div style="font-size:12px;padding-top: 5px;">
+                    <input type="radio" id="fullmode" name="screenRadio" />Full-Screen Mode
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <select id="fullscreen" style="width: 100px;"></select>
+                    <select id="tempoption" style="width: 100px;display: none;"></select>
+                </div>
+                <div style="padding-top: 9px;"></div>
+                <hr>
+                <div style="margin-left: 43px;">
+                    <input id="DisplayOK" type="button" value="OK" style="width:73px;font-size: 12px;" onclick="displayClick(this)" />
+                    <input id="DisplayCancel" type="button" value="Cancel" style="width:73px;font-size: 12px;margin-left: 4px;" onclick="displayClick(this)" ></input>
+                </div>
+            </div>
+        </div>
+
+        <div id="HtmlPanel">
+            <iframe src="News/index.html" width="455px" height="306px" style="border: 0;"></iframe>
+        </div>
+
     </body>
 
 
     <script type="text/javascript">
+        /* Html for Notice/Event/Etc */
+        var HtmlPanel = document.getElementById('HtmlPanel');
+        /* Display Setting start*/
+        var Display = document.getElementById("Display");
+        var fullscreen = 0; //window mode = 2; full screen mode = 0
+        var resoultion_value = "";
+        var fullscreen_option = document.getElementById('fullscreen');
+        var window_option = document.getElementById('winvalue');
+        var temp_option = document.getElementById('tempoption');
+        var window_value = "1024 X 768";
+        var display_normal_bmp = "1/1-BUTTON2-1.bmp";
+        var display_press_bmp = "1/1-BUTTON2-2.bmp";
+        var display_hover_bmp = "1/1-BUTTON2-3.bmp";
+        var screen_choice = document.getElementsByName('screenRadio');
+        var resolution_list2 = "";
+        var resolution_list2Ar = [];
+	    var b_display_hover = false;
+	    var b_display_press = false;
+        function setDisplayOption(csFullScreen,width,height,csResoulutionList)
+        {
+            fullscreen_option.addEventListener('change', function() {
+                resoultion_value = this.value;
+            });
+            window_option.addEventListener('keypress' , function(e) {
+                e.preventDefault();
+                return;
+            } );
+            for (let i = 0; i < screen_choice.length; i++)
+            {
+                screen_choice[i].addEventListener('change', function() {
+                    if( this.id == 'winmode' )
+                        setWindowMode();
+                    else if ( this.id == 'fullmode' ){
+                        setFullScreenMode();
+                    }
+                });
+            }
+            let l = 0;
+            resolution_list2 = csResoulutionList.split( ',' );
+            for( let i = 0; i < resolution_list2.length; i++ )
+            {
+                resolution_list2Ar[l++] = resolution_list2[i].toUpperCase().split( 'X' );
+            }
+            for( let j = 0; j < resolution_list2Ar.length; j++ )
+            {
+                var optionValue = `${resolution_list2Ar[j][0]} X ${resolution_list2Ar[j][1]}`;
+                var option = document.createElement('option');
+                option.appendChild( document.createTextNode( optionValue ) );
+                option.value = optionValue; 
+                fullscreen_option.appendChild(option); 
+            }
+            if( csFullScreen == 2 )
+                setWindowMode();
+            else{
+                fullscreen_option.selectedIndex = 0;
+                for( let j = 0; j < fullscreen_option.length; j++ ){
+                    if( fullscreen_option.options[j].value == ( `${width} X ${height}` ) ){
+                        fullscreen_option.selectedIndex = j;
+                        break;
+                    }
+                }
+                setFullScreenMode();
+            }
+        }
+        function setWindowMode()
+        {
+            fullscreen = 2;
+            resoultion_value = window_value;
+            window_option.value = window_value;
+            fullscreen_option.style.display = 'none';
+            temp_option.style.display = '';
+            temp_option.disabled = true;
+            window_option.disabled = false;
+            screen_choice[0].checked = true;
+            screen_choice[1].checked = false;
+        }
+        function setFullScreenMode()
+        {
+            fullscreen = 0;
+            window_option.value = "";
+            fullscreen_option.style.display = '';
+            temp_option.style.display = 'none';
+            window_option.disabled = true;
+            resoultion_value = fullscreen_option.options[fullscreen_option.selectedIndex].value;            
+            screen_choice[0].checked = false;
+            screen_choice[1].checked = true;
+        }
+	    function displayhover()
+	    {
+		    if( b_display_hover )
+		        return;
+		    b_display_hover = true;
+            displaybutton.src = display_hover_bmp;
+	    }
+	    function displayout()
+	    {
+		    if( !b_display_hover )
+		        return;
+                b_display_hover = false;
+		    displaybutton.src = display_normal_bmp;
+	    }
+	    function displaydown()
+	    {
+            if( !b_display_hover )
+                return;
+            b_display_hover = false;
+            b_display_press = true;
+            displaybutton.src = display_press_bmp;
+            showDisplaySetting();
+	    }
+	    function displayup()
+	    {
+            if( b_display_press )
+                return;
+            b_display_press = false;
+            displaybutton.src = display_normal_bmp;
+	    }
+        function showDisplaySetting(t = 'show')
+        {
+            if (t === "show")
+            {
+                Display.style.display = "block";
+                HtmlPanel.style.display = 'none';
+            }
+            else
+            {
+                Display.style.display = "none";
+                HtmlPanel.style.display = '';
+            }
+        }
+        function displayClick()
+        {
+            showDisplaySetting('hide');
+            displaybutton.src = display_normal_bmp;
+        }
+        /* Display Setting end*/
 
+
+        var start_normal_bmp = "1/1-BUTTON0-1.bmp";
+        var start_press_bmp = "1/1-BUTTON0-2.bmp";
+        var start_hover_bmp = "1/1-BUTTON0-3.bmp";
+        var start_novalid_bmp = "1/1-BUTTON0-4.bmp";
+
+        var quit_normal_bmp = "1/1-BUTTON1-1.bmp";
+        var quit_press_bmp = "1/1-BUTTON1-2.bmp";
+        var quit_hover_bmp = "1/1-BUTTON1-3.bmp";
+
+
+        var download_completed = false;
 	    var eaprocess = document.getElementById("EachProgressBar");
 	    var totalinfo = document.getElementById('TotalProgressBar');
 	    var eaprocessB = document.getElementById("EachProgressBar");
@@ -125,13 +327,15 @@
     	var kbinfo = document.getElementById("KBInfo");
 	    var versioninfo =document.getElementById("VersionInfo");
     	var startbutton = document.getElementById("StartButton");
-    
-    	document.addEventListener('contextmenu', event => event.preventDefault());
-    	startbutton.ondragstart = function () { return false; };
+    	var exitbutton = document.getElementById("ExitButton");
+    	var displaybutton = document.getElementById("OptionButton");
+        startbutton.src = start_novalid_bmp;
 
 	    function setCompleted()
 	    {
 			versioninfo.textContent = "Completed.";
+            startbutton.src = start_normal_bmp;
+            download_completed = true;
 	    }
 	    function setExtracting( currentPatch, totalPatch )
 	    {
@@ -139,43 +343,83 @@
 	    }
 	    function setDownloadInfo( downloadedBytes, totalBytes, totalAllDownloaded, totalAllSize, currentPatch, totalPatch )
 	    {
-		if( totalAllSize == 0 || currentPatch == 0 || totalPatch == 0 )
-		{
-		    eaprocess.style.width = 0;
-		    totalinfo.style.width = 0;
-		    return;
-		}
-		eaprocess.style.width = 3.67 * ((downloadedBytes/totalBytes) * 100).toFixed(3);
-		totalinfo.style.width = 3.67 * ((totalAllDownloaded/totalAllSize) * 100).toFixed(3);
-		kbinfo.textContent = `(${totalAllDownloaded} kb / ${totalAllSize} kb)`;
-		versioninfo.textContent = `Downloading... (${currentPatch} / ${totalPatch})`;
-		if( totalAllDownloaded == totalAllSize )
-		{
-		    startbutton.src = "1/1-BUTTON0-1.bmp";
-		}
+            if( totalAllSize == 0 || currentPatch == 0 || totalPatch == 0 )
+            {
+                startbutton.src = start_novalid_bmp;
+                eaprocess.style.width = 0;
+                totalinfo.style.width = 0;
+                return;
+            }
+            eaprocess.style.width = 3.67 * ((downloadedBytes/totalBytes) * 100).toFixed(3);
+            totalinfo.style.width = 3.67 * ((totalAllDownloaded/totalAllSize) * 100).toFixed(3);
+            kbinfo.textContent = `(${totalAllDownloaded} kb / ${totalAllSize} kb)`;
+            versioninfo.textContent = `Downloading... (${currentPatch} / ${totalPatch})`;
 	    }
 
 	    var b_start_hover = false;
-	    function start()
+	    function startnormal()
 	    {
-		if( width < 100 || b_start_hover )
-		    return;
-		    startbutton.src = "1/1-BUTTON0-3.bmp";
+		    startbutton.src = start_normal_bmp;
+	    }
+	    function starthover()
+	    {
+		    if( !download_completed || b_start_hover )
+		        return;
+		    startbutton.src = start_hover_bmp;
 		    b_start_hover = true;
 	    }
 	    function startout()
 	    {
-		if( !b_start_hover )
-		    return;
+		    if( !b_start_hover )
+		        return;
 		    b_start_hover = false;
-		    startbutton.src = "1/1-BUTTON0-1.bmp";
+		    startbutton.src = start_normal_bmp;
 	    }
 	    function startdown()
 	    {
             if( !b_start_hover )
                 return;
             b_start_hover = false;
-            startbutton.src = "1/1-BUTTON0-4.bmp";
+            startbutton.src = start_press_bmp;
+	    }
+	    function startup()
+	    {
+            if( !b_start_hover )
+                return;
+            b_start_hover = false;
+            startbutton.src = start_normal_bmp;
+	    }
+        
+	    var b_quit_hover = false;
+	    var b_quit_press = false;
+	    function quithover()
+	    {
+		    if( b_quit_hover )
+		        return;
+            exitbutton.src = quit_hover_bmp;
+		    b_quit_hover = true;
+	    }
+	    function quitout()
+	    {
+		    if( !b_quit_hover )
+		        return;
+                b_quit_hover = false;
+		    exitbutton.src = quit_normal_bmp;
+	    }
+	    function quitdown()
+	    {
+            if( !b_quit_hover )
+                return;
+            b_quit_hover = false;
+            b_quit_press = true;
+            exitbutton.src = quit_press_bmp;
+	    }
+	    function quitup()
+	    {
+            if( b_quit_press )
+                return;
+            b_quit_press = false;
+            exitbutton.src = quit_normal_bmp;
 	    }
 
     </script>
