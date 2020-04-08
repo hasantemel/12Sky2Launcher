@@ -8,7 +8,7 @@ all feature is working now
 - Download and Extract patch
 - Exit
 - Start
-- Display Resulotion
+- Display Setting
 
 PRESENTVERSION.DAT //start at 00001<br/>
 00001<br/>
