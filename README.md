@@ -18,6 +18,6 @@ SERVERVER.INI //start at 00002<br/>
 PATCH = 1.0.0.0<br/>
 SERVER = 00020<br/>
 
-![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/Untitled0.png)
+![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/0.png)
 
-![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/Untitled1.png)
+![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/1.png)
