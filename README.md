@@ -24,5 +24,6 @@ SERVER = 00020<br/>
 
 ![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/1.png)
 
-#Transparent Background
+# Transparent Background
+Form1.cs : //TransparencyKey = Color.Transparent;//delete libEGL.dll and libGLESv2.dll if using this
 ![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/7.png)
