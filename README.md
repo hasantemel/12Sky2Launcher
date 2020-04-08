@@ -10,6 +10,8 @@ all feature is working now
 - Start
 - Display Setting
 
+Edit Patch/Client Confing => Launcher/Launcher.js
+
 PRESENTVERSION.DAT //start at 00001<br/>
 00001<br/>
 
