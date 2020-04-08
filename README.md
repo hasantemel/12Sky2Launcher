@@ -23,3 +23,6 @@ SERVER = 00020<br/>
 ![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/0.png)
 
 ![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/1.png)
+
+#Transparent Background
+![image](https://raw.githubusercontent.com/DOSexample/12Sky2Launcher/master/7.png)
