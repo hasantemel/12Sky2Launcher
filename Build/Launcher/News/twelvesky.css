@@ -28,7 +28,7 @@ select						 {	behavior: url('/include/selectbox.htc');}
 
 a:link 						 {	color: #b9bfc6;	text-decoration: none;}
 a:visited 					 {	color: #b9bfc6;	text-decoration: none;}
-a:hover						 {	color: #ffffff;	text-decoration: none;}
+a:hover						 {	color: #fffffe;	text-decoration: none;}
 a:active					 {	color: #b9bfc6;	text-decoration: none;}
 
 .assasinID				 	 {	font-size:14px; color:#b9bfc6;	vertical-align:middle;}
@@ -124,11 +124,11 @@ a:active					 {	color: #b9bfc6;	text-decoration: none;}
 	.td_subject	 a:hover	 {	color:#ffea98;	text-decoration: none;	text-align:left;	vertical-align:middle;}
 	.td_subject_bold		 {	color:#e8eaec;	text-align:left;	vertical-align:middle;		font-weight:bold;	padding-top:2px;}
 		
-	.td_Launcher			 {	color:#ffffff;	text-align:left;	vertical-align:middle;}
-	.td_Launcher a:link		 {	color:#ffffff;	text-decoration: none;	text-align:left;	vertical-align:middle;}
+	.td_Launcher			 {	color:#fffffe;	text-align:left;	vertical-align:middle;}
+	.td_Launcher a:link		 {	color:#fffffe;	text-decoration: none;	text-align:left;	vertical-align:middle;}
 	.td_Launcher a:visited	 {	color:#b9bfc6;	text-decoration: none;	text-align:left;	vertical-align:middle;}
-	.td_Launcher a:hover	 {	color:#ffffff;	text-decoration: underline;	text-align:left;	vertical-align:middle;}
-	.td_Launcher_bold		 {	color:#ffffff;	text-align:left;	vertical-align:middle;		font-weight:bold;	padding-top:2px;}
+	.td_Launcher a:hover	 {	color:#fffffe;	text-decoration: underline;	text-align:left;	vertical-align:middle;}
+	.td_Launcher_bold		 {	color:#fffffe;	text-align:left;	vertical-align:middle;		font-weight:bold;	padding-top:2px;}
 	.td_line_Launcher		 {	height:1px;}
 	
 	.td_writer				 {	color:#737d8d;		text-align:center;		vertical-align:middle;}
